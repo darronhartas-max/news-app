@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>News v5</title>
+<title>News v6</title>
 <link rel="manifest" href="manifest.json">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -30,7 +30,7 @@
 <body>
 
 <header>
-  <h1>News v5</h1>
+  <h1>News v6</h1>
   <span id="status">—</span>
   <button id="refresh">↻</button>
 </header>
@@ -174,10 +174,10 @@ async function fetchWithRetry(url, attempts, timeoutMs){
   throw lastErr;
 }
 
-let loadSeq = 0;
+const loadSeqByName = {};
 
 async function load(name, silent){
-  const mySeq = ++loadSeq;
+  const mySeq = (loadSeqByName[name] = (loadSeqByName[name] || 0) + 1);
   if(!silent){
     statusEl.textContent = 'loading…';
   }
@@ -211,13 +211,13 @@ async function load(name, silent){
     const items = [...doc.querySelectorAll('item')].map(parseItem).slice(0, 60);
 
     localStorage.setItem(cacheKey, JSON.stringify({ts: Date.now(), items}));
-    if(name === current && mySeq === loadSeq){
+    if(name === current && mySeq === loadSeqByName[name]){
       render(items, false);
       statusEl.textContent = 'live · updated ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
       statusEl.style.color = '';
     }
   } catch(e){
-    if(!silent && mySeq === loadSeq){
+    if(!silent && mySeq === loadSeqByName[name]){
       if(cached){
         statusEl.innerHTML = 'showing saved <span class="err">(' + (e.message||e) + ')</span>';
       } else {
