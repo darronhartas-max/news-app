@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>News v3</title>
+<title>News v4</title>
 <link rel="manifest" href="manifest.json">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -30,7 +30,7 @@
 <body>
 
 <header>
-  <h1>News v3</h1>
+  <h1>News v4</h1>
   <span id="status">—</span>
   <button id="refresh">↻</button>
 </header>
@@ -217,9 +217,9 @@ async function load(name, silent){
   } catch(e){
     if(!silent){
       if(cached){
-        statusEl.innerHTML = 'showing saved <span class="err">(connection weak)</span>';
+        statusEl.innerHTML = 'showing saved <span class="err">(' + (e.message||e) + ')</span>';
       } else {
-        listEl.innerHTML = '<div class="msg err">No connection yet — pull to refresh once you have signal.<br><span style="color:#666;font-size:14px">(' + (e.message||e) + ')</span></div>';
+        listEl.innerHTML = '<div class="msg err">Couldn\'t load news.<br><span style="color:#666;font-size:14px">(' + (e.message||e) + ')</span></div>';
         statusEl.textContent = 'waiting for signal';
       }
     }
