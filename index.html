@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>News</title>
+<title>News v2</title>
 <link rel="manifest" href="manifest.json">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -30,7 +30,7 @@
 <body>
 
 <header>
-  <h1>News</h1>
+  <h1>News v2</h1>
   <span id="status">—</span>
   <button id="refresh">↻</button>
 </header>
@@ -108,11 +108,14 @@ function parseItem(node){
   const pubDateRaw = node.querySelector('pubDate')?.textContent;
   const descRaw = node.querySelector('description')?.textContent || '';
 
+  // Google News title format: "Headline - Source"
   let title = rawTitle, source = '';
   const m = rawTitle.match(/^(.*) - ([^-]+)$/);
   if(m){ title = m[1].trim(); source = m[2].trim(); }
 
+  // description is an HTML blob with an <a> (often same as title) and sometimes more text/list of related links
   const descText = stripHtml(descRaw);
+  // remove leading duplicate of the title from the summary if present
   let summary = descText.replace(title, '').replace(/^[\s\-–:]+/, '').trim();
 
   return {
@@ -227,6 +230,8 @@ async function prefetchOthers(){
 
 document.getElementById('refresh').onclick = () => load(current);
 
+// Pull-to-refresh: standalone PWA mode has no native browser pull-to-refresh gesture,
+// so implement a simple touch-based version.
 let touchStartY = null;
 let pullTriggered = false;
 
@@ -258,6 +263,8 @@ buildCats();
 load(current).then(() => prefetchOthers());
 
 if('serviceWorker' in navigator){
+  // unregister any previously installed service worker from earlier versions of this app,
+  // so stale cached HTML/JS never gets served instead of this file
   navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
 }
 </script>
