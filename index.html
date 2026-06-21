@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>News v2</title>
+<title>News v3</title>
 <link rel="manifest" href="manifest.json">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -30,7 +30,7 @@
 <body>
 
 <header>
-  <h1>News v2</h1>
+  <h1>News v3</h1>
   <span id="status">—</span>
   <button id="refresh">↻</button>
 </header>
@@ -208,7 +208,12 @@ async function load(name, silent){
     const items = [...doc.querySelectorAll('item')].map(parseItem).slice(0, 60);
 
     localStorage.setItem(cacheKey, JSON.stringify({ts: Date.now(), items}));
-    if(name === current) render(items, false);
+    if(name === current){
+      render(items, false);
+      statusEl.textContent = 'updated just now';
+      statusEl.style.color = '#4ade80';
+      setTimeout(() => { statusEl.textContent = 'live'; statusEl.style.color = ''; }, 1500);
+    }
   } catch(e){
     if(!silent){
       if(cached){
@@ -228,7 +233,12 @@ async function prefetchOthers(){
   }
 }
 
-document.getElementById('refresh').onclick = () => load(current);
+document.getElementById('refresh').onclick = (e) => {
+  e.target.style.transform = 'rotate(360deg)';
+  e.target.style.transition = 'transform 0.4s';
+  setTimeout(() => { e.target.style.transform = ''; }, 400);
+  load(current);
+};
 
 // Pull-to-refresh: standalone PWA mode has no native browser pull-to-refresh gesture,
 // so implement a simple touch-based version.
