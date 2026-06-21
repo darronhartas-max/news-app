@@ -11,7 +11,7 @@
   header{position:sticky;top:0;background:#111;border-bottom:1px solid #333;padding:10px 12px;display:flex;align-items:center;gap:8px;z-index:10}
   header h1{font-size:25.5px;flex:1}
   #status{font-size:16.5px;color:#888}
-  #refresh{background:#1a1a1a;border:1px solid #333;color:#ccc;border-radius:8px;padding:8px 14px;font-size:18px}
+  #refresh{background:#1a1a1a;border:1px solid #333;color:#ccc;border-radius:8px;padding:10px 16px;font-size:22px;line-height:1}
   .cats{display:flex;gap:6px;overflow-x:auto;padding:8px 12px;background:#0a0a0a;border-bottom:1px solid #222;white-space:nowrap}
   .cat{background:#1a1a1a;border:1px solid #333;color:#ccc;padding:7px 16px;border-radius:14px;font-size:19.5px;flex-shrink:0}
   .cat.active{background:#2563eb;border-color:#2563eb;color:#fff}
@@ -105,11 +105,14 @@ function parseItem(node){
   const pubDateRaw = node.querySelector('pubDate')?.textContent;
   const descRaw = node.querySelector('description')?.textContent || '';
 
+  // Google News title format: "Headline - Source"
   let title = rawTitle, source = '';
   const m = rawTitle.match(/^(.*) - ([^-]+)$/);
   if(m){ title = m[1].trim(); source = m[2].trim(); }
 
+  // description is an HTML blob with an <a> (often same as title) and sometimes more text/list of related links
   const descText = stripHtml(descRaw);
+  // remove leading duplicate of the title from the summary if present
   let summary = descText.replace(title, '').replace(/^[\s\-–:]+/, '').trim();
 
   return {
@@ -224,10 +227,41 @@ async function prefetchOthers(){
 
 document.getElementById('refresh').onclick = () => load(current);
 
+// Pull-to-refresh: standalone PWA mode has no native browser pull-to-refresh gesture,
+// so implement a simple touch-based version.
+let touchStartY = null;
+let pullTriggered = false;
+
+document.addEventListener('touchstart', (e) => {
+  if(window.scrollY === 0){
+    touchStartY = e.touches[0].clientY;
+    pullTriggered = false;
+  }
+}, {passive: true});
+
+document.addEventListener('touchmove', (e) => {
+  if(touchStartY === null) return;
+  const dy = e.touches[0].clientY - touchStartY;
+  if(dy > 80 && !pullTriggered && window.scrollY === 0){
+    pullTriggered = true;
+    statusEl.textContent = 'refreshing…';
+  }
+}, {passive: true});
+
+document.addEventListener('touchend', () => {
+  if(pullTriggered){
+    load(current);
+  }
+  touchStartY = null;
+  pullTriggered = false;
+}, {passive: true});
+
 buildCats();
 load(current).then(() => prefetchOthers());
 
 if('serviceWorker' in navigator){
+  // unregister any previously installed service worker from earlier versions of this app,
+  // so stale cached HTML/JS never gets served instead of this file
   navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
 }
 </script>
