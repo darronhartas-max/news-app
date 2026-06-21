@@ -1,0 +1,9 @@
+{
+  "name": "News",
+  "short_name": "News",
+  "start_url": "https://darronhartas-max.github.io/news-app/",
+  "scope": "https://darronhartas-max.github.io/news-app/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000"
+}
